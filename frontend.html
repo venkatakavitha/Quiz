@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz App</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+
+  <div class="quiz-container" style="background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); text-align: center; width: 300px;">
+    <h1>Quiz App</h1>
+    
+    <div id="timer" style="font-size: 18px; color: #ff5722;"></div>
+
+    <div id="question-container">
+      <div id="question"></div>
+      <div id="choices">
+        <!-- Choices will be inserted here dynamically -->
+      </div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+      <button id="next-button" onclick="nextQuestion()" style="padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;" disabled>Next</button>
+      <button id="skip-button" onclick="nextQuestion()" style="padding: 10px; background-color: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer;">Skip</button>
+    </div>
+
+    <div id="score-container" style="margin-top: 20px;">
+      <p>Your Score: <span id="score">0</span></p>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "What is the capital of France?",
+        choices: ["Berlin", "Madrid", "Paris", "Lisbon"],
+        answer: "Paris"
+      },
+      {
+        question: "What is 2 + 2?",
+        choices: ["3", "4", "5", "6"],
+        answer: "4"
+      },
+      {
+        question: "Who is the CEO of Tesla?",
+        choices: ["Jeff Bezos", "Elon Musk", "Bill Gates", "Mark Zuckerberg"],
+        answer: "Elon Musk"
+      },
+      {
+        question: "What is the color of the sky?",
+        choices: ["Green", "Blue", "Yellow", "Red"],
+        answer: "Blue"
+      }
+      // Add more questions as needed
+    ];
+
+    // Shuffle the questions
+    function shuffleQuestions(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+    
+    // Shuffle questions on load
+    shuffleQuestions(questions);
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timerInterval;
+    let timeLeft = 30; // Time limit per question in seconds
+
+    // Load the current question
+    function loadQuestion() {
+      // Reset the timer
+      timeLeft = 30;
+      document.getElementById("timer").textContent = `Time left: ${timeLeft}s`;
+      clearInterval(timerInterval);
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").textContent = `Time left: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          nextQuestion();
+        }
+      }, 1000);
+
+      const question = questions[currentQuestionIndex];
+      document.getElementById("question").textContent = question.question;
+
+      const choicesContainer = document.getElementById("choices");
+      choicesContainer.innerHTML = ''; // Clear previous choices
+
+      question.choices.forEach(choice => {
+        const button = document.createElement("button");
+        button.textContent = choice;
+        button.classList.add("choice-button");
+        button.style.display = "block";
+        button.style.backgroundColor = "#f1f1f1";
+        button.style.padding = "10px";
+        button.style.margin = "10px 0";
+        button.style.border = "none";
+        button.style.width = "100%";
+        button.style.cursor = "pointer";
+
+        // Hover effect for the button
+        button.onmouseover = function() {
+          button.style.backgroundColor = "#ddd";
+        };
+
+        button.onmouseout = function() {
+          button.style.backgroundColor = "#f1f1f1";
+        };
+
+        button.onclick = () => checkAnswer(choice, button);
+        choicesContainer.appendChild(button);
+      });
+    }
+
+    // Check the answer
+    function checkAnswer(selectedChoice, button) {
+      const correctAnswer = questions[currentQuestionIndex].answer;
+      const nextButton = document.getElementById("next-button");
+
+      // Enable the "Next" button after selecting an answer
+      nextButton.disabled = false;
+
+      if (selectedChoice === correctAnswer) {
+        score++;
+        document.getElementById("score").textContent = score;
+        button.style.backgroundColor = "#4CAF50"; // Correct answer
+      } else {
+        button.style.backgroundColor = "#f44336"; // Incorrect answer
+      }
+    }
+
+    // Move to the next question or finish the quiz
+    function nextQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        loadQuestion();
+        document.getElementById("next-button").disabled = true; // Disable "Next" button until an answer is selected
+      } else {
+        clearInterval(timerInterval); // Clear the timer when the quiz ends
+        alert(`Quiz finished! Your final score is: ${score}`);
+        // Reset for next quiz
+        currentQuestionIndex = 0;
+        score = 0;
+        document.getElementById("score").textContent = score;
+        shuffleQuestions(questions);
+        loadQuestion();
+        document.getElementById("next-button").disabled = true;
+      }
+    }
+
+    // Initialize the quiz
+    loadQuestion();
+  </script>
+
+</body>
+</html>
